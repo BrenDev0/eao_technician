@@ -1,3 +1,6 @@
+import os 
+import json 
+
 from src.workflow.application.services.prompt_service import PromptService
 from src.workflow.state import State
 from src.workflow.domain.services.llm_service import LlmService
@@ -17,6 +20,19 @@ class Technician:
         self.__llm_service = llm_service
         self.__streaming = streaming
         self.__search_context = search_context
+        self.__collections_map = self.__load_collections_map()
+
+    
+    def __load_collections_map():
+        collections_json = os.getenv('COLLECTIONS_MAP')
+
+        if collections_json:
+            try:
+                return json.loads(collections_json)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON in COLLECTIONS_MAP environment variable: {e}")
+        else:
+            raise EnvironmentError("COLLECTIONS_MAP environment variable is not set")
 
     @error_handler(module=__MODULE)
     async def __get_prompt(self, state: State):
@@ -55,9 +71,11 @@ class Technician:
         Remember: Your goal is to enable the technician to resolve issues quickly and safely while maintaining high service quality standards.
         """
 
+        namespace = self.__collections_map[state["company_id"]]
+
         context = await self.__search_context.execute(
             input=state["input"],
-            namespace=state["collection"]
+            namespace=namespace
         )
 
         prompt = self.__prompt_service.build_prompt(

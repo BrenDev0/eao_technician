@@ -18,7 +18,8 @@ class VectorRepository(ABC):
         self, 
         query_vector: List[float], 
         top_k: int = 4,
-        namespace: Optional[str] = None
+        namespace: Optional[str] = None,
+        score_threshold: Optional[float] = None
     ) -> List[SearchResult]:
         raise NotImplementedError
     

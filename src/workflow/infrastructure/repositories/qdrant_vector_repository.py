@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import os
 from qdrant_client import QdrantClient
 from src.workflow.domain.repositories.vector_repository import VectorRepository
@@ -18,12 +18,15 @@ class QdrantVectorRepository(VectorRepository):
         self, 
         namespace: str,
         query_vector: List[float], 
-        top_k: int = 4
+        top_k: int = 4,
+        score_threshold: Optional[float] = None
     ) -> List[SearchResult]:
+       
         results = self.client.search(
             collection_name=namespace,
             query_vector=query_vector,
             limit=top_k,
+            score_threshold=score_threshold,
             with_payload=True
         )
         
